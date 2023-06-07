@@ -13,6 +13,9 @@ export default function Course() {
         // Cuando existe el window configuramos scorm-again
         window.API = new Scorm12API({ autocommit: true });
 
+        // Iniciar una sesión SCORM
+        window.API.LMSInitialize("");
+
         // Cargar el progreso guardado desde el localStorage
         const usersCMI = localStorage.getItem("cmi");
         if (usersCMI) window.API.loadFromJSON(JSON.parse(usersCMI).cmi);
