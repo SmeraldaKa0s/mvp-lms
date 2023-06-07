@@ -12,7 +12,18 @@ export default function Course() {
     useEffect(() => {
         // Cuando existe el window configuramos scorm-again
         window.API = new Scorm12API({ autocommit: true });
-        
+
+        // Cargar el progreso guardado desde el localStorage
+        const usersCMI = localStorage.getItem("cmi");
+        if (usersCMI) window.API.loadFromJSON(JSON.parse(usersCMI).cmi);
+
+        // Escucha el evento 'LMSSetValue.cmi.*'
+        window.API.on('LMSSetValue.cmi.*', function (CMIElement, value) {
+            window.API.storeData(true);
+            localStorage.setItem('cmi', JSON.stringify(window.API.renderCommitCMI(true)));
+            console.log(window.API.renderCommitCMI(true));
+        });
+
     }, [])
 
     useEffect(() => {
