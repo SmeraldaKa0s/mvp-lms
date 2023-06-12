@@ -17,14 +17,22 @@ export default function Course() {
         if (typeof window !== "undefined") {
 
             // Cuando existe el window configuramos scorm-again
-            window.API = new Scorm12API({ autocommit: true });
+            window.API = new Scorm12API({
+                autocommit: true,
+                autocommitSeconds: 5,
+                logLevel: 4,
+                alwaysSendTotalTime: true
+            });
 
             // Cargar el progreso guardado desde el localStorage
             const usersCMI = localStorage.getItem("cmi");
             if (usersCMI) window.API.loadFromJSON(JSON.parse(usersCMI).cmi);
-
+            window.API.on('LMSInitialize', (...args) => {
+                console.log('aaaaa', args)
+            });
             // Escucha el evento 'LMSSetValue.cmi.*'
             window.API.on('LMSSetValue.cmi.*', function (CMIElement, value) {
+                console.log('CMIelement', CMIElement);
                 window.API.storeData(true);
                 localStorage.setItem('cmi', JSON.stringify(window.API.renderCommitCMI(true)));
                 console.log(window.API.renderCommitCMI(true));
@@ -41,8 +49,8 @@ export default function Course() {
 
             });
 
-           /*  Valor inexistente para probar detección de errores
-            window.API.LMSSetValue("cmi.core.non_existent_element", "some value"); */
+            /* Valor inexistente para probar detección de errores
+            window.API.LMSSetValue("cmi.core.non_existent_element", "some value");  */
 
 
             window.API.on('LMSSetValue.cmi.core.lesson_status', function (CMIElement, value) {
@@ -59,16 +67,19 @@ export default function Course() {
                 setSessionTime(value);
                 console.log("Session time: " + value);
             })
-
-            window.API.on('LMSSetValue.cmi.core.total_time', function (CMIElement, value) {
-                setTotalTime(value);
-                console.log("Total time: " + value);
-            });
-
         }
     }, [])
 
-
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            window.API.on('LMSCommit', function () {
+                console.log("LMSCommit has been called");
+                let value = window.API.LMSGetValue("cmi.core.total_time");
+                console.log("Total time: ", value);
+                setTotalTime(value);
+            });
+        }
+    }, []);
 
     useEffect(() => {
         // Cuando tenemos el courseId de la ruta cargamos el curso
@@ -89,11 +100,12 @@ export default function Course() {
                 <h2 className='text-xl font-semibold my-4'>Scorm MVP</h2>
 
 
-                <div className='mt-4'>
+                <div className='mt-4 bg-blue-50'>
                     <h3 className='text-lg font-semibold'>SCORM Data:</h3>
                     <p>Lesson Status: {lessonStatus}</p>
                     <p>Lesson Location: {lessonLocation}</p>
                     <p>Session Time: {sessionTime}</p>
+                    <p>Total Time: {totalTime}</p>
                 </div>
             </div>
 

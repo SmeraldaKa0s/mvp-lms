@@ -35,6 +35,24 @@ export const courses = [
         type: 'scorm12',
     
     },
+    {
+        id: 'COURSEPRUEBA',
+        name: 'Course Prueba',
+        url: '/courses_files/COURSEPRUEBA/index.html',
+        type: 'scorm12',
+        thumbnail: '/courses_files/runtime/Etiquette/course.jpg',
+        type: 'scorm12',
+    
+    },
+    {
+        id: 'course Western',
+        name: 'course Western',
+        url: '/courses_files/courseWestern/topic.html',
+        type: 'scorm12',
+        thumbnail: '/courses_files/runtime/Etiquette/course.jpg',
+        type: 'scorm12',
+    
+    },
 ];
 
 export const getCourse = (courseId) => courses.find(course => course.id === courseId)
