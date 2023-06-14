@@ -27,9 +27,9 @@ export const courses = [
     
     },
     {
-        id: 'ReacCourse2',
+        id: 'ReactCourse2',
         name: 'React Intro 2',
-        url: '/courses_files/ReacCourse/react.html',
+        url: '/courses_files/ReactCourse2/react.html',
         type: 'scorm12',
         thumbnail: '/courses_files/runtime/Etiquette/course.jpg',
         type: 'scorm12',
@@ -45,9 +45,18 @@ export const courses = [
     
     },
     {
-        id: 'course Western',
-        name: 'course Western',
+        id: 'courseWestern',
+        name: 'Course Western',
         url: '/courses_files/courseWestern/topic.html',
+        type: 'scorm12',
+        thumbnail: '/courses_files/runtime/Etiquette/course.jpg',
+        type: 'scorm12',
+    
+    },
+    {
+        id: 'platae',
+        name: 'Plantae',
+        url: '/courses_files/platae/index.html',
         type: 'scorm12',
         thumbnail: '/courses_files/runtime/Etiquette/course.jpg',
         type: 'scorm12',
