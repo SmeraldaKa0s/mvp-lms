@@ -83,7 +83,7 @@ export default function Course({ courseId, courseData}) {
 
     useEffect(() => {
         if (typeof window !== "undefined") {
-
+            window.alert = () => {}
             // Cuando existe el window configuramos scorm-again
             window.API = new Scorm12API({
                 autocommit: true,
@@ -184,6 +184,7 @@ export default function Course({ courseId, courseData}) {
 
             <div className='flex w-2/3 bg-slate-50 shadow rounded-lg overflow-hidden'>
                 <iframe
+                    sandbox="allow-scripts allow-forms allow-pointer-lock allow-same-origin"
                     className="w-full h-full"
                     id="course-iframe"
                     src={resource}
