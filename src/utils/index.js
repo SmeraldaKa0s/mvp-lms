@@ -71,6 +71,15 @@ export const courses = [
         type: 'scorm12',
     
     },
+    {
+        id: 'flores',
+        name: 'Flores',
+        url: '/courses_files/flores/index.html',
+        type: 'scorm12',
+        thumbnail: '/courses_files/scorm-1/scorm-img1.png',
+        type: 'scorm12',
+    
+    },
 ];
 
 export const getCourse = (courseId) => courses.find(course => course.id === courseId)
