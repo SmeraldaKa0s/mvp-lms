@@ -1,34 +1,24 @@
 import { useEffect, useState } from 'react';
 import Head from 'next/head';
 import axios from 'axios';
-import { useRouter } from 'next/router';
-import { getCourse } from '../../utils';
 import { buildFromXML } from '../../utils/buildFromXML';
-import { buildFromXML as buildViejo } from '../../utils/clase1';
-
 
 const FRONTEND_URL = 'http://localhost:3000';
 
 export const getServerSideProps = async (context) => {
     const courseId = context.params.courseId;
-    let courseData = {};
     let objetoNuevo = {};
 
     try {
         const response = await axios.get(`${FRONTEND_URL}/courses_files/${courseId}/imsmanifest.xml`)
         const data = response.data;
-
         objetoNuevo = JSON.parse(buildFromXML(data));
-        //courseData = buildViejo(data);
-
     }
     catch (error) {
         console.error('Error:', error);
     }
 
     return { props: { courseId, courseData: objetoNuevo } }
-
-    // server side
 }
 
 
@@ -41,9 +31,6 @@ export default function Course({ courseId, courseData }) {
     const [objetives, setObjetives] = useState("");
     const [items, setItems] = useState([]);
     const [title, setTitle] = useState("");
-
-
-    //console.log(courseData)
 
     const buildCourseUrl = (url) => `/courses_files/${courseId}/${url}`;
 
@@ -62,111 +49,10 @@ export default function Course({ courseId, courseData }) {
         ));
     }
 
-    useEffect(() => {
-        const organizations = courseData.organizations;
-        const organization = organizations.organization;
-        const firstOrganization = organization[0];
-        const courseTitle = firstOrganization.title;
-        const firstOrganizationItems = firstOrganization.items;
-        const firstItemFromFirstOrg = firstOrganizationItems[0];
-        const resourceIdOfFirstItem = firstItemFromFirstOrg.identifierref;
-        // //console.log(firstItemFromFirstOrg, "FIRRRRRRRRRRRTS")
-        setTitle(courseTitle)
-        setItems(firstOrganizationItems)
-
-        const resources = courseData.resources;
-        const resource = resources.resource;
-        const openingResource = resource.filter((r) => r.identifier === resourceIdOfFirstItem)[0]  //pueden haber varios resource 
-        //console.log("RESOURCEEEEE", openingResource)
-        const firsResourceUrl = openingResource.href;
-        setResource(buildCourseUrl(firsResourceUrl))
-    }, [])
-
-    useEffect(() => {
-        if (typeof window !== "undefined") {
-            window.alert = () => { }
-            // Cuando existe el window configuramos scorm-again
-            window.API = new Scorm12API({
-                autocommit: true,
-                autocommitSeconds: 5,
-                logLevel: 4,
-                alwaysSendTotalTime: true
-            });
-
-            // Cargar el progreso guardado desde el localStorage
-            const usersCMI = localStorage.getItem("cmi");
-            if (usersCMI) window.API.loadFromJSON(JSON.parse(usersCMI).cmi);
-            window.API.on('LMSInitialize', (...rest) => {
-                //console.log('Inicializado el LMS', rest)
-            });
-            window.API.on('LMSGetLastError', (...rest) => {
-                //console.log('LMSGetLastError', rest)
-            });
-            window.API.on('LMSGetErrorString', (...rest) => {
-                //console.log('LMSGetErrorString', rest)
-            });
-            window.API.on('LMSGetDiagnostic', (...rest) => {
-                //console.log('LMSGetDiagnostic', rest)
-            });
-            // Escucha el evento 'LMSSetValue.cmi.*'
-            window.API.on('LMSSetValue.cmi.*', function (CMIElement, value) {
-                //console.log('CMIelement', CMIElement);
-                window.API.storeData(true);
-                localStorage.setItem('cmi', JSON.stringify(window.API.renderCommitCMI(true)));
-                //console.log(window.API.renderCommitCMI(true));
-
-                // Comprueba si hay algún error
-                /*   const errorCode = window.API.LMSGetLastError();
-                  if (errorCode !== "0") {
-                      const errorString = window.API.LMSGetErrorString(errorCode);
-                      const diagnostic = window.API.LMSGetDiagnostic(errorCode);
-                      console.error("SCORM Error: " + errorString + " Diagnostic: " + diagnostic);
-                  } else {
-                      //console.log("No SCORM error occurred");
-                  } */
-
-            });
-
-            /* Valor inexistente para probar detección de errores
-            window.API.LMSSetValue("cmi.core.non_existent_element", "some value");  */
-
-
-            window.API.on('LMSSetValue.cmi.core.lesson_status', function (CMIElement, value) {
-                setLessonStatus(value);
-                //console.log("Lesson status: " + value);
-            });
-
-            window.API.on('LMSSetValue.cmi.core.lesson_location', function (CMIElement, value) {
-                setLessonLocation(value);
-                //console.log("Lesson location: " + value);
-            });
-
-            window.API.on('LMSSetValue.cmi.core.session_time', function (CMIElement, value) {
-                setSessionTime(value);
-                //console.log("Session time: " + value);
-            })
-
-            // Obtener el estado inicial del objetivo
-            let initialObjectiveStatus = window.API.LMSGetValue("cmi.objectives");
-            //console.log("Initial objective status: " + initialObjectiveStatus);
-            setObjetives(initialObjectiveStatus);
-
-            window.API.on('LMSSetValue.cmi.objectives.*', function (CMIElement, value) {
-                //console.log("Objective status: " + value);
-                const cmiPath = CMIElement.split('.');
-                const key = cmiPath[cmiPath.length - 1]
-                console.log('path', cmiPath)
-                setObjetives(obj => ({ ...obj, [key]: value}));
-                window.API.storeData(true);
-                //console.log(window.API.renderCommitCMI(true));
-            });
-
-        }
-    }, [])
 
     function setInitialObjective(objectiveIndex, id, minScore, maxScore, rawScore, status) {
         // Para que funcione tiene que existir window.API
-        if(!window || !window.API) console.log("setInitialObjetive debe estar en el useEffect")
+        if (!window || !window.API) console.log("setInitialObjetive debe estar en el useEffect")
         window.API.LMSSetValue("cmi.objectives." + objectiveIndex + ".id", id);
         window.API.LMSSetValue("cmi.objectives." + objectiveIndex + ".score.min", minScore);
         window.API.LMSSetValue("cmi.objectives." + objectiveIndex + ".score.max", maxScore);
@@ -174,27 +60,88 @@ export default function Course({ courseId, courseData }) {
         window.API.LMSSetValue("cmi.objectives." + objectiveIndex + ".status", status);
     }
 
-    
     useEffect(() => {
-        window.API.on('LMSSetValue.cmi.objectives.*', function (CMIElement, value) {
-            console.log({CMIElement, value})
-        })
-        setTimeout(() => {
-            // Establecer un objetivo inicial
-            setInitialObjective(0, "Objetivo-nuevo", 0, 100, 0, "No te juno");
-        }, 1000)
+        // Obtenemos el primer recurso
+        const organizations = courseData.organizations;
+        const organization = organizations.organization;
+        const firstOrganization = organization[0];
+        const courseTitle = firstOrganization.title;
+        const firstOrganizationItems = firstOrganization.items;
+        const firstItemFromFirstOrg = firstOrganizationItems[0];
+        const resourceIdOfFirstItem = firstItemFromFirstOrg.identifierref;
+
+        setTitle(courseTitle)
+        setItems(firstOrganizationItems)
+
+        const resources = courseData.resources;
+        const resource = resources.resource;
+        const openingResource = resource.filter((r) => r.identifier === resourceIdOfFirstItem)[0]  //pueden haber varios resource 
+        const firsResourceUrl = openingResource.href;
+
+        setResource(buildCourseUrl(firsResourceUrl))
     }, [])
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            window.API.on('LMSCommit', function () {
-                //console.log("LMSCommit has been called");
-                let value = window.API.LMSGetValue("cmi.core.total_time");
-                //console.log("Total time: ", value);
-                setTotalTime(value);
-            });
-        }
-    }, []);
+        if (typeof window == "undefined") return;
+
+        // Configuramos scorm-again
+        window.API = new Scorm12API({
+            autocommit: true,
+            autocommitSeconds: 5,
+            logLevel: 4,
+            alwaysSendTotalTime: true
+        });
+
+        // Cargar el progreso guardado desde el localStorage
+        const usersCMI = localStorage.getItem("cmi");
+        if (usersCMI) window.API.loadFromJSON(JSON.parse(usersCMI).cmi);
+
+        window.API.on('LMSInitialize', () => {
+            console.log('Inicializado el LMS')
+        });
+
+        // Escucha todos los cambios del cmi
+        window.API.on('LMSSetValue.cmi.*', function (CMIElement, value) {
+            window.API.storeData(true);
+            localStorage.setItem('cmi', JSON.stringify(window.API.renderCommitCMI(true)));
+        });
+
+        window.API.on('LMSSetValue.cmi.core.lesson_status', function (CMIElement, value) {
+            setLessonStatus(value);
+            //console.log("Lesson status: " + value);
+        });
+
+        window.API.on('LMSSetValue.cmi.core.lesson_location', function (CMIElement, value) {
+            setLessonLocation(value);
+            //console.log("Lesson location: " + value);
+        });
+
+        window.API.on('LMSSetValue.cmi.core.session_time', function (CMIElement, value) {
+            setSessionTime(value);
+            //console.log("Session time: " + value);
+        })
+
+        window.API.on('LMSSetValue.cmi.objectives.*', function (CMIElement, value) {
+            const cmiPath = CMIElement.split('.');
+            const key = cmiPath[cmiPath.length - 1]
+            setObjetives(obj => ({ ...obj, [key]: value }));
+        });
+
+        window.API.on('LMSCommit', function () {
+            let value = window.API.LMSGetValue("cmi.core.total_time");
+            setTotalTime(value);
+            //console.log("Total time: ", value);
+        });
+
+        // Seteamos el objetivo, pero no sabemos por que necesita estar en un setTimeout
+        // Puede ser que tenga que ver con la carga del curso, quizas se pueden modificar las cosas
+        // solo despues de que el curso esta cargadas las cosas
+        setTimeout(() => {
+            setInitialObjective(0, "Objetivo cargado desde Scorm Again", 0, 100, 0, "Completed");
+        }, 1000)
+
+    }, [])
+
 
     return (
         <div className='p-5 flex justify-between bg-blue-100 min-h-screen'>
